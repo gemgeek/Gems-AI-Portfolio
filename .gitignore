@@ -1,0 +1,28 @@
+# --- General ---
+# Ignore OS-specific files
+.DS_Store
+.vscode/
+
+# --- Python / Backend ---
+# Ignore the virtual environment folder
+/backend/venv/
+# Ignore Python cache files
+/backend/__pycache__/
+*.pyc
+# IMPORTANT: Ignore the file with your secret API key
+/backend/.env
+
+# --- Node / Frontend ---
+# Ignore the massive node_modules folder
+/frontend/node_modules/
+# Ignore build outputs
+/frontend/build/
+# Ignore log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Ignore local environment variables for the frontend
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
