@@ -1,4 +1,7 @@
 # 🤖 GEM's AI Portfolio  
+
+🚀 Live Demo: https://gems-ai-portfolio.vercel.app/
+
 Welcome to my personal AI-powered portfolio! This is a full-stack web application designed to be an interactive and engaging way for you to get to know me, my skills, and my work. Instead of a static page, you can have a conversation with my AI assistant, which is powered by Google's Gemini model.  
 
 ---
