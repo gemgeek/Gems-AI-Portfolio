@@ -19,10 +19,10 @@ const portfolioData = {
 // --- COMPONENTS ---
 
 const ProjectCard = ({ project }) => (
-  <a 
-    href={project.link} 
-    target="_blank" 
-    rel="noopener noreferrer" 
+  <a
+    href={project.link}
+    target="_blank"
+    rel="noopener noreferrer"
     className="bg-white/80 backdrop-blur-md rounded-2xl p-4 w-full sm:w-60 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out shadow-lg border border-gray-200 flex flex-col"
   >
     <div className="w-full h-32 mb-3 rounded-lg overflow-hidden bg-gray-200">
@@ -37,7 +37,7 @@ const ProjectCard = ({ project }) => (
 );
 
 const ChatMessage = ({ message }) => {
-  const { sender, type, data, isLoading } = message;
+  const { sender, type, data, intro_text, isLoading } = message;
   const isUser = sender === 'user';
 
   const renderContent = () => {
@@ -54,6 +54,9 @@ const ChatMessage = ({ message }) => {
     if (type === 'cards' && Array.isArray(data)) {
       return (
         <div className="mt-2 w-full max-w-2xl">
+          {intro_text && (
+            <div className="prose prose-sm mb-4" dangerouslySetInnerHTML={{ __html: intro_text }} />
+          )}
           <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-start">
             {data.map((project, index) => <ProjectCard key={index} project={project} />)}
           </div>
@@ -104,17 +107,15 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (text, isRetry = false) => {
+  const handleSendMessage = async (text) => {
     if (!text.trim()) return;
 
-    // Only add user message and loading indicator on the first try
-    if (!isRetry) {
-      const userMessage = { sender: 'user', type: 'text', data: text };
-      setMessages(prev => [...prev, userMessage]);
-      setInputValue('');
-      setShowQuickQuestions(false);
-      setMessages(prev => [...prev, { sender: 'ai', type: 'text', data: '', isLoading: true }]);
-    }
+    const userMessage = { sender: 'user', type: 'text', data: text };
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setShowQuickQuestions(false);
+
+    setMessages(prev => [...prev, { sender: 'ai', type: 'text', data: '', isLoading: true }]);
 
     try {
       const response = await fetch('https://gemgeek.pythonanywhere.com/api/chat', {
@@ -126,29 +127,20 @@ export default function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const aiResponse = await response.json();
-      const aiMessage = { sender: 'ai', type: aiResponse.type, data: aiResponse.data, isLoading: false };
+      
+      const aiMessage = { 
+        sender: 'ai', 
+        type: aiResponse.type, 
+        data: aiResponse.data, 
+        intro_text: aiResponse.intro_text || null, // Make sure to grab the new intro_text
+        isLoading: false 
+      };
       
       setMessages(prev => prev.map(m => m.isLoading ? aiMessage : m));
-
     } catch (error) {
-      console.error("Fetch attempt failed:", error);
-
-      // --- THIS IS THE NEW LOGIC ---
-      if (!isRetry) {
-        // First attempt failed, show "waking up" message and retry
-        const wakingUpMessage = { sender: 'ai', type: 'text', data: "My AI brain is waking up... please give it a moment! 🧠✨", isLoading: false };
-        setMessages(prev => prev.map(m => m.isLoading ? wakingUpMessage : m));
-        
-        // Wait 15 seconds for the server to wake up, then retry
-        setTimeout(() => {
-          handleSendMessage(text, true); // The second argument `true` marks this as a retry
-        }, 15000);
-
-      } else {
-        // Retry also failed, show a final friendly error message
-        const finalErrorMessage = { sender: 'ai', type: 'text', data: "Looks like my AI is taking a coffee break! ☕️ Please try refreshing the page in a moment.", isLoading: false };
-        setMessages(prev => prev.map(m => m.isLoading ? finalErrorMessage : m));
-      }
+      console.error("Failed to fetch from backend:", error);
+      const errorMessage = { sender: 'ai', type: 'text', data: "Oops! I'm having trouble connecting. Please make sure the backend server is running.", isLoading: false };
+      setMessages(prev => prev.map(m => m.isLoading ? errorMessage : m));
     }
   };
 
