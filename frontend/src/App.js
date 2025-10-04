@@ -4,8 +4,8 @@ import { User, Briefcase, Code, Send, Bot, Phone, Sparkles, ChevronDown, Chevron
 // --- PERSONAL DATA & CONFIG ---
 const portfolioData = {
   name: "GEM",
-  avatar: "https://gemgeek.pythonanywhere.com/images/gem-geek-avatar.jpg", 
-  presentationPhoto: "https://gemgeek.pythonanywhere.com/images/Pretty-Gbeve.jpg",
+  avatar: "/images/gem-geek-avatar.jpg", 
+  presentationPhoto: "/images/Pretty-Gbeve.jpg",
   bio: "My AI Portfolio",
   suggestedQuestions: [
     { text: "About Me", icon: <User size={16} />, key: "about", prompt: "Tell me all about GEM" },
@@ -107,15 +107,16 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (text) => {
+  const handleSendMessage = async (text, isRetry = false) => {
     if (!text.trim()) return;
 
-    const userMessage = { sender: 'user', type: 'text', data: text };
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-    setShowQuickQuestions(false);
-
-    setMessages(prev => [...prev, { sender: 'ai', type: 'text', data: '', isLoading: true }]);
+    if (!isRetry) {
+        const userMessage = { sender: 'user', type: 'text', data: text };
+        setMessages(prev => [...prev, userMessage]);
+        setInputValue('');
+        setShowQuickQuestions(false);
+        setMessages(prev => [...prev, { sender: 'ai', type: 'text', data: '', isLoading: true }]);
+    }
 
     try {
       const response = await fetch('https://gemgeek.pythonanywhere.com/api/chat', {
@@ -131,9 +132,19 @@ export default function App() {
       
       setMessages(prev => prev.map(m => m.isLoading ? aiMessage : m));
     } catch (error) {
-      console.error("Failed to fetch from backend:", error);
-      const errorMessage = { sender: 'ai', type: 'text', data: "My AI brain is waking up... please give it a moment! 🧠✨", isLoading: false };
-      setMessages(prev => prev.map(m => m.isLoading ? errorMessage : m));
+      console.error("Fetch attempt failed:", error);
+
+      if (!isRetry) {
+          const wakingUpMessage = { sender: 'ai', type: 'text', data: "My AI brain is waking up... please give it a moment! 🧠✨", isLoading: false };
+          setMessages(prev => prev.map(m => m.isLoading ? wakingUpMessage : m));
+        
+          setTimeout(() => {
+            handleSendMessage(text, true);
+          }, 15000);
+      } else {
+          const finalErrorMessage = { sender: 'ai', type: 'text', data: "Looks like my AI is taking a coffee break! ☕️ Please try refreshing the page in a moment.", isLoading: false };
+          setMessages(prev => prev.map(m => m.isLoading ? finalErrorMessage : m));
+      }
     }
   };
 
@@ -243,3 +254,4 @@ export default function App() {
     </div>
   );
 }
+
