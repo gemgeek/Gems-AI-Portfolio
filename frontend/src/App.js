@@ -4,8 +4,8 @@ import { User, Briefcase, Code, Send, Bot, Phone, Sparkles, ChevronDown, Chevron
 // --- PERSONAL DATA & CONFIG ---
 const portfolioData = {
   name: "GEM",
-  avatar: "/images/gem-geek-avatar.jpg",
-  presentationPhoto: "/images/Pretty-Gbeve.jpg", 
+  avatar: "https://gemgeek.pythonanywhere.com/images/gem-geek-avatar.jpg", 
+  presentationPhoto: "https://gemgeek.pythonanywhere.com/images/Pretty-Gbeve.jpg",
   bio: "My AI Portfolio",
   suggestedQuestions: [
     { text: "About Me", icon: <User size={16} />, key: "about", prompt: "Tell me all about GEM" },
@@ -65,7 +65,7 @@ const ChatMessage = ({ message }) => {
     }
     
     const shouldShowPhoto = typeof data === 'string' && data.includes('[SHOW_PHOTO]');
-    const cleanData = typeof data === 'string' ? data.replace('[SHOW_PHOTO]', '') : data;
+    const cleanData = typeof data === 'string' ? data.replace(/\[SHOW_PHOTO\]/g, '') : data;
 
     return (
       <div>
@@ -127,14 +127,7 @@ export default function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const aiResponse = await response.json();
-      
-      const aiMessage = { 
-        sender: 'ai', 
-        type: aiResponse.type, 
-        data: aiResponse.data, 
-        intro_text: aiResponse.intro_text || null, // Make sure to grab the new intro_text
-        isLoading: false 
-      };
+      const aiMessage = { sender: 'ai', type: aiResponse.type, data: aiResponse.data, intro_text: aiResponse.intro_text || null, isLoading: false };
       
       setMessages(prev => prev.map(m => m.isLoading ? aiMessage : m));
     } catch (error) {
