@@ -139,7 +139,7 @@ export default function App() {
       setMessages(prev => prev.map(m => m.isLoading ? aiMessage : m));
     } catch (error) {
       console.error("Failed to fetch from backend:", error);
-      const errorMessage = { sender: 'ai', type: 'text', data: "Oops! I'm having trouble connecting. Please make sure the backend server is running.", isLoading: false };
+      const errorMessage = { sender: 'ai', type: 'text', data: "My AI brain is waking up... please give it a moment! 🧠✨", isLoading: false };
       setMessages(prev => prev.map(m => m.isLoading ? errorMessage : m));
     }
   };
